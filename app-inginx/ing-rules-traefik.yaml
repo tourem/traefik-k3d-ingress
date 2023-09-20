@@ -1,0 +1,38 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: nginx
+  #namespace: ingress
+spec:
+  stripPrefix:
+    prefixes:
+      - /coffee
+      - /tea
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.middlewares: default-nginx@kubernetescrd
+spec:
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - path: /coffee
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-nginx-coffee-deployment
+            port:
+              number: 80
+      - path: /tea
+        pathType: Prefix
+        backend:
+          service:
+            name: svc-nginx-tea-deployment
+            port:
+              number: 80
